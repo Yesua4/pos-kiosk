@@ -98,7 +98,12 @@
     const items = cart.items();
     const count = cart.count();
     $('#cart-count').textContent = count + (count === 1 ? ' item' : ' items');
-    $('#cart-total').textContent = formatPeso(cart.total());
+    // When the Senior/PWD discount is on, show it here too so the cart matches the Review screen.
+    const discountOn = cart.hasDiscount() && items.length > 0;
+    $('#cart-discount-lines').hidden = !discountOn;
+    $('#cart-subtotal').textContent = formatPeso(cart.total());
+    $('#cart-discount').textContent = '−' + formatPeso(cart.discount());
+    $('#cart-total').textContent = formatPeso(cart.amountDue());
     $('#btn-proceed').disabled = items.length === 0;
 
     if (items.length === 0) {

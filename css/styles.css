@@ -186,6 +186,7 @@ main { flex: 1; padding: 24px 28px; min-height: 0; }
 .cart-empty { text-align: center; color: var(--muted); padding: 48px 12px; }
 .cart-empty-icon { font-size: 48px; display: block; margin-bottom: 8px; }
 .cart-foot { padding: 20px 24px; border-top: 1px solid var(--border); }
+.cart-discount-lines { margin-bottom: 10px; }
 .total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; font-size: 22px; }
 .total-row strong { font-size: 32px; color: var(--primary); }
 .cart-foot .btn { width: 100%; }
