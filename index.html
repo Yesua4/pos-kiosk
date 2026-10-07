@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CS Campus Store — POS Kiosk</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">CS</div>
+      <div>
+        <div class="brand-name">CS Campus Store</div>
+        <div class="brand-sub">Self-service kiosk</div>
+      </div>
+    </div>
+    <ol class="stepper" id="stepper" aria-label="Progress">
+      <li data-step="1"><span class="step-dot">1</span>Order</li>
+      <li data-step="2"><span class="step-dot">2</span>Review</li>
+      <li data-step="3"><span class="step-dot">3</span>Payment</li>
+      <li data-step="4"><span class="step-dot">4</span>Receipt</li>
+    </ol>
+  </header>
+
+  <main>
+    <!-- Screen 1: Item Selection -->
+    <section class="screen screen-order" data-screen="order">
+      <div class="catalog">
+        <div class="catalog-head">
+          <h1>Tap a product to add it</h1>
+          <div class="chips" id="category-chips" role="tablist"></div>
+        </div>
+        <div class="product-grid" id="product-grid"></div>
+      </div>
+
+      <aside class="cart">
+        <div class="cart-head">
+          <h2>Your Order</h2>
+          <span class="pill" id="cart-count">0 items</span>
+        </div>
+        <ul class="cart-list" id="cart-list"></ul>
+        <div class="cart-foot">
+          <div class="total-row">
+            <span>Total</span>
+            <strong id="cart-total">₱0.00</strong>
+          </div>
+          <button class="btn btn-primary btn-xl" data-action="go-review" id="btn-proceed">Proceed to Payment</button>
+        </div>
+      </aside>
+    </section>
+
+    <!-- Screen 2: Order / Payment Summary -->
+    <section class="screen" data-screen="review" hidden>
+      <div class="panel panel-wide">
+        <h1>Review your order</h1>
+        <p class="muted">Check your items before paying. Tap Back to make changes — your items stay in the cart.</p>
+        <table class="table">
+          <thead>
+            <tr><th>Product</th><th class="num">Quantity</th><th class="num">Unit price</th><th class="num">Subtotal</th></tr>
+          </thead>
+          <tbody id="review-rows"></tbody>
+        </table>
+        <div class="summary-total">
+          <div>
+            <div class="muted">Total Amount</div>
+            <div class="muted small" id="review-count"></div>
+          </div>
+          <strong id="review-total"></strong>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-xl" data-action="go-order">‹ Back</button>
+          <button class="btn btn-primary btn-xl" data-action="go-method">Continue to Payment ›</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Payment Method -->
+    <section class="screen" data-screen="method" hidden>
+      <div class="panel panel-wide">
+        <h1>How would you like to pay?</h1>
+        <p class="muted">Tap one of the options below.</p>
+        <div class="amount-due">
+          <span>Amount due</span>
+          <strong data-bind="total"></strong>
+        </div>
+        <div class="method-grid">
+          <button class="method-card" data-action="choose-method" data-method="cash">
+            <span class="method-icon" aria-hidden="true">💵</span>
+            <span class="method-name">Cash</span>
+            <span class="method-desc">Enter the amount you are paying. Change is computed for you.</span>
+          </button>
+          <button class="method-card" data-action="choose-method" data-method="qr">
+            <span class="method-icon" aria-hidden="true">📱</span>
+            <span class="method-name">QR Payment</span>
+            <span class="method-desc">Scan with a supported e-wallet or banking app.</span>
+          </button>
+          <button class="method-card" data-action="choose-method" data-method="card">
+            <span class="method-icon" aria-hidden="true">💳</span>
+            <span class="method-name">Credit / Debit Card</span>
+            <span class="method-desc">Tap, insert, or swipe your card at the reader.</span>
+          </button>
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary btn-xl" data-action="go-review">‹ Back to Order</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4a: Cash payment -->
+    <section class="screen" data-screen="cash" hidden>
+      <div class="panel panel-wide pay-layout">
+        <div class="pay-info">
+          <h1>Cash Payment</h1>
+          <div class="kv"><span>Total amount</span><strong data-bind="total"></strong></div>
+          <label class="field-label" for="cash-display">Amount paid</label>
+          <input id="cash-display" class="cash-display" readonly placeholder="₱0" inputmode="none" aria-describedby="cash-error">
+          <div class="alert alert-error" id="cash-error" role="alert" hidden>
+            <strong id="cash-error-title"></strong>
+            <span id="cash-error-detail"></span>
+          </div>
+          <div class="field-label">Quick amounts</div>
+          <div class="quick-grid">
+            <button class="btn btn-quick" data-action="cash-quick" data-amount="exact">Exact</button>
+            <button class="btn btn-quick" data-action="cash-quick" data-amount="200">₱200</button>
+            <button class="btn btn-quick" data-action="cash-quick" data-amount="500">₱500</button>
+            <button class="btn btn-quick" data-action="cash-quick" data-amount="1000">₱1,000</button>
+          </div>
+          <div class="change-box">
+            <div>
+              <div class="muted">Change</div>
+              <div class="muted small" id="change-formula"></div>
+            </div>
+            <strong id="change-value">—</strong>
+          </div>
+        </div>
+        <div class="pay-side">
+          <div class="keypad" aria-label="Number keypad">
+            <button class="key" data-action="key" data-key="1">1</button>
+            <button class="key" data-action="key" data-key="2">2</button>
+            <button class="key" data-action="key" data-key="3">3</button>
+            <button class="key" data-action="key" data-key="4">4</button>
+            <button class="key" data-action="key" data-key="5">5</button>
+            <button class="key" data-action="key" data-key="6">6</button>
+            <button class="key" data-action="key" data-key="7">7</button>
+            <button class="key" data-action="key" data-key="8">8</button>
+            <button class="key" data-action="key" data-key="9">9</button>
+            <button class="key key-muted" data-action="key" data-key="clear">Clear</button>
+            <button class="key" data-action="key" data-key="0">0</button>
+            <button class="key key-muted" data-action="key" data-key="back" aria-label="Backspace">⌫</button>
+          </div>
+          <button class="btn btn-primary btn-xl" data-action="pay-cash">Pay Now</button>
+          <button class="btn btn-ghost" data-action="go-method">Change payment method</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4b: QR payment -->
+    <section class="screen" data-screen="qr" hidden>
+      <div class="panel panel-wide pay-layout">
+        <div class="qr-box">
+          <div class="qr-placeholder" aria-label="QR code placeholder">
+            <div class="qr-corner tl"></div><div class="qr-corner tr"></div><div class="qr-corner bl"></div>
+            <span>QR CODE<br><small>placeholder</small></span>
+          </div>
+          <div class="muted small" id="qr-ref"></div>
+        </div>
+        <div class="pay-info">
+          <h1>QR Payment</h1>
+          <div class="kv"><span>Amount to pay</span><strong data-bind="total"></strong></div>
+          <ol class="steps-list">
+            <li>Scan the QR code using your supported payment application.</li>
+            <li>Check that the amount is <strong data-bind="total"></strong> and approve it in your app.</li>
+            <li>Tap <strong>Confirm Payment</strong> below.</li>
+          </ol>
+          <div class="status" id="qr-status" hidden><span class="spinner"></span>Verifying payment…</div>
+          <div class="actions">
+            <button class="btn btn-secondary btn-xl" data-action="go-method" data-busy-lock>‹ Back</button>
+            <button class="btn btn-primary btn-xl" data-action="confirm-qr" data-busy-lock>Confirm Payment</button>
+          </div>
+          <p class="muted small">Simulated payment — the amount paid will equal the total, with ₱0.00 change.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 4c: Card payment -->
+    <section class="screen" data-screen="card" hidden>
+      <div class="panel panel-wide pay-layout">
+        <div class="card-visual" id="card-visual">
+          <div class="card-chip"></div>
+          <div class="card-number">•••• •••• •••• 4821</div>
+          <div class="card-amount" data-bind="total"></div>
+        </div>
+        <div class="pay-info">
+          <h1>Credit / Debit Card</h1>
+          <div class="kv"><span>Amount due</span><strong data-bind="total"></strong></div>
+          <p class="instruction">Please tap, insert, or swipe your card.</p>
+          <div class="status" id="card-status" hidden>
+            <span class="spinner"></span>
+            <div><strong>Processing payment…</strong><div class="small muted">Do not remove your card until the payment is complete.</div></div>
+          </div>
+          <div class="actions">
+            <button class="btn btn-secondary btn-xl" data-action="go-method" data-busy-lock>‹ Back</button>
+            <button class="btn btn-primary btn-xl" data-action="process-card" data-busy-lock>Process Payment</button>
+          </div>
+          <p class="muted small">Simulated payment — the amount paid will equal the total, with ₱0.00 change.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 5: Payment Successful -->
+    <section class="screen" data-screen="success" hidden>
+      <div class="panel panel-narrow center">
+        <div class="success-icon" aria-hidden="true">✓</div>
+        <h1>Payment Successful</h1>
+        <p class="muted">Transaction completed successfully. Thank you!</p>
+        <dl class="details" id="success-details"></dl>
+        <button class="btn btn-primary btn-xl btn-block" data-action="go-receipt">View Receipt</button>
+      </div>
+    </section>
+
+    <!-- Screen 6: Receipt -->
+    <section class="screen" data-screen="receipt" hidden>
+      <div class="receipt-layout">
+        <article class="receipt" id="receipt"></article>
+        <div class="panel receipt-side">
+          <h2>Your receipt</h2>
+          <p class="muted">Keep this for your records. Tap New Transaction when you are done — your order and payment details will be cleared.</p>
+          <button class="btn btn-primary btn-xl btn-block" data-action="new-transaction">New Transaction</button>
+          <button class="btn btn-secondary btn-block" data-action="print-receipt">Print Receipt</button>
+          <p class="muted small">Printing is optional — the digital receipt is your proof of payment.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="js/format.js"></script>
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/payment.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
