@@ -186,6 +186,7 @@ main { flex: 1; padding: 24px 28px; min-height: 0; }
 .cart-empty { text-align: center; color: var(--muted); padding: 48px 12px; }
 .cart-empty-icon { font-size: 48px; display: block; margin-bottom: 8px; }
 .cart-foot { padding: 20px 24px; border-top: 1px solid var(--border); }
+.cart-discount-lines { margin-bottom: 10px; }
 .total-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; font-size: 22px; }
 .total-row strong { font-size: 32px; color: var(--primary); }
 .cart-foot .btn { width: 100%; }
@@ -200,6 +201,27 @@ main { flex: 1; padding: 24px 28px; min-height: 0; }
   background: var(--primary-soft); border-radius: 12px; padding: 18px 22px; margin-top: 20px;
 }
 .summary-total strong { font-size: 34px; color: var(--primary); }
+
+.discount-toggle {
+  display: flex; align-items: center; gap: 18px; width: 100%;
+  min-height: var(--touch); margin-top: 20px; padding: 16px 22px;
+  border: 3px solid var(--border); border-radius: 12px; background: var(--surface-2);
+  font: inherit; color: var(--text); text-align: left; cursor: pointer;
+}
+.discount-toggle:active { transform: scale(0.99); }
+.discount-check {
+  flex: none; width: 36px; height: 36px; border-radius: 8px;
+  border: 3px solid var(--primary); background: var(--surface);
+  display: grid; place-items: center; font-size: 24px; font-weight: 800; color: #fff;
+}
+.discount-toggle.is-on { border-color: var(--success); background: var(--success-soft); }
+.discount-toggle.is-on .discount-check { background: var(--success); border-color: var(--success); }
+.discount-toggle.is-on .discount-check::after { content: '✓'; }
+.discount-title { display: block; font-weight: 700; font-size: 20px; }
+.discount-note { display: block; color: var(--muted); font-size: 15px; }
+.summary-lines { margin-top: 16px; padding: 0 22px; }
+.summary-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 19px; }
+.summary-discount { color: var(--success); font-weight: 600; }
 
 /* ---------- Screen 3: method ---------- */
 .amount-due {

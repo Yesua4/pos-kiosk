@@ -41,6 +41,10 @@
         </div>
         <ul class="cart-list" id="cart-list"></ul>
         <div class="cart-foot">
+          <div class="cart-discount-lines" id="cart-discount-lines" hidden>
+            <div class="summary-line"><span>Subtotal</span><span id="cart-subtotal"></span></div>
+            <div class="summary-line summary-discount"><span>Senior/PWD discount (20%)</span><span id="cart-discount"></span></div>
+          </div>
           <div class="total-row">
             <span>Total</span>
             <strong id="cart-total">₱0.00</strong>
@@ -61,6 +65,17 @@
           </thead>
           <tbody id="review-rows"></tbody>
         </table>
+        <button class="discount-toggle" id="discount-toggle" data-action="toggle-discount" aria-pressed="false">
+          <span class="discount-check" aria-hidden="true"></span>
+          <span>
+            <span class="discount-title">Senior Citizen / PWD discount (20%)</span>
+            <span class="discount-note">Tap to apply. Please present a valid ID to the store staff.</span>
+          </span>
+        </button>
+        <div class="summary-lines" id="review-discount-lines" hidden>
+          <div class="summary-line"><span>Subtotal</span><span id="review-subtotal"></span></div>
+          <div class="summary-line summary-discount"><span>Senior Citizen / PWD discount (20%)</span><span id="review-discount"></span></div>
+        </div>
         <div class="summary-total">
           <div>
             <div class="muted">Total Amount</div>

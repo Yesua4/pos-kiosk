@@ -4,7 +4,7 @@
 const assert = require('assert');
 const { formatPeso } = require('../js/format.js');
 const { PRODUCTS } = require('../js/products.js');
-const { createCart, MAX_QUANTITY } = require('../js/cart.js');
+const { createCart, computeDiscount, MAX_QUANTITY } = require('../js/cart.js');
 const { validateCashPayment, createTransactionNumberGenerator } = require('../js/payment.js');
 
 let passed = 0;
@@ -124,6 +124,52 @@ test('14. New Transaction: clearing the cart empties it and total is 0', () => {
   cart.clear();
   assert.ok(cart.isEmpty());
   assert.strictEqual(cart.total(), 0);
+});
+
+console.log('Senior Citizen / PWD discount');
+
+test('Discount off by default: amount due equals total', () => {
+  const cart = sampleOrder();
+  assert.strictEqual(cart.hasDiscount(), false);
+  assert.strictEqual(cart.discount(), 0);
+  assert.strictEqual(cart.amountDue(), 17500);
+});
+
+test('20% discount on ₱175.00 -> discount ₱35.00, amount due ₱140.00', () => {
+  const cart = sampleOrder();
+  cart.setDiscount(true);
+  assert.strictEqual(cart.total(), 17500);
+  assert.strictEqual(cart.discount(), 3500);
+  assert.strictEqual(cart.amountDue(), 14000);
+});
+
+test('Discounted order: paying ₱200 cash gives ₱60.00 change', () => {
+  const cart = sampleOrder();
+  cart.setDiscount(true);
+  assert.deepStrictEqual(validateCashPayment('200', cart.amountDue()), { ok: true, paid: 20000, change: 6000 });
+});
+
+test('Discount follows cart changes (removing Soft Drink -> ₱140 total, ₱28 discount, ₱112 due)', () => {
+  const cart = sampleOrder();
+  cart.setDiscount(true);
+  cart.remove('soft-drink');
+  assert.strictEqual(cart.discount(), 2800);
+  assert.strictEqual(cart.amountDue(), 11200);
+});
+
+test('Discount is rounded to the nearest centavo', () => {
+  assert.strictEqual(computeDiscount(1255, 20), 251); // ₱12.55 × 20% = ₱2.51
+  assert.strictEqual(computeDiscount(1257, 20), 251); // ₱2.514 -> ₱2.51
+  assert.strictEqual(computeDiscount(1258, 20), 252); // ₱2.516 -> ₱2.52
+});
+
+test('New Transaction (clear) turns the discount off', () => {
+  const cart = sampleOrder();
+  cart.setDiscount(true);
+  cart.clear();
+  assert.strictEqual(cart.hasDiscount(), false);
+  cart.add('coffee');
+  assert.strictEqual(cart.amountDue(), 4500);
 });
 
 test('Peso formatting', () => {
