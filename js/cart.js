@@ -1,0 +1,86 @@
+// Cart logic: no DOM code here, so it can be unit-tested with Node.
+
+const MAX_QUANTITY = 99;
+
+function createCart(products) {
+  // Map of productId -> quantity, kept in insertion order.
+  const lines = new Map();
+
+  function findProduct(id) {
+    const product = products.find((p) => p.id === id);
+    if (!product) throw new Error('Unknown product: ' + id);
+    return product;
+  }
+
+  return {
+    // Returns { ok, error? } so the UI can show feedback.
+    add(id) {
+      findProduct(id);
+      const qty = lines.get(id) || 0;
+      if (qty >= MAX_QUANTITY) {
+        return { ok: false, error: 'Invalid quantity — maximum is ' + MAX_QUANTITY + ' per item.' };
+      }
+      lines.set(id, qty + 1);
+      return { ok: true };
+    },
+
+    increase(id) {
+      return this.add(id);
+    },
+
+    // Decreasing from 1 removes the line, so quantity never becomes 0 or negative.
+    decrease(id) {
+      const qty = lines.get(id) || 0;
+      if (qty <= 0) return { ok: false, error: 'Invalid quantity.' };
+      if (qty === 1) {
+        lines.delete(id);
+        return { ok: true, removed: true };
+      }
+      lines.set(id, qty - 1);
+      return { ok: true };
+    },
+
+    remove(id) {
+      return { ok: lines.delete(id) };
+    },
+
+    quantityOf(id) {
+      return lines.get(id) || 0;
+    },
+
+    // Subtotal = Unit Price × Quantity
+    items() {
+      return Array.from(lines, ([id, quantity]) => {
+        const product = findProduct(id);
+        return {
+          id,
+          name: product.name,
+          unitPrice: product.price,
+          quantity,
+          subtotal: product.price * quantity,
+        };
+      });
+    },
+
+    // Total Amount = Sum of all item subtotals
+    total() {
+      return this.items().reduce((sum, line) => sum + line.subtotal, 0);
+    },
+
+    count() {
+      let n = 0;
+      lines.forEach((qty) => { n += qty; });
+      return n;
+    },
+
+    isEmpty() {
+      return lines.size === 0;
+    },
+
+    clear() {
+      lines.clear();
+    },
+  };
+}
+
+if (typeof module !== 'undefined') module.exports = { createCart, MAX_QUANTITY };
