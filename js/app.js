@@ -223,6 +223,8 @@
 
   // ---------- Completing a payment ----------
   function completePayment(method, paid, change) {
+    // An order can only be paid once; ignore repeated calls (double tap, Enter + click).
+    if (state.transaction) return;
     if (cart.isEmpty()) {
       toast('Your order is empty.', 'error');
       go('order');
@@ -362,7 +364,11 @@
     if (/^[0-9]$/.test(event.key)) pressKey(event.key);
     else if (event.key === 'Backspace') pressKey('back');
     else if (event.key === 'Escape') pressKey('clear');
-    else if (event.key === 'Enter') payCash();
+    else if (event.key === 'Enter') {
+      // Without this, Enter on a focused button also triggers a click, so payCash() ran twice.
+      event.preventDefault();
+      payCash();
+    }
   });
 
   go('order');
