@@ -1,6 +1,9 @@
 // Payment validation and transaction numbers. No DOM code here.
 
-// Depends on formatPeso() from format.js (loaded first in index.html).
+// Explicit dependency on format.js: Node loads it with require(); in the browser,
+// format.js is loaded first in index.html and provides formatPeso as a global.
+// (Named formatAmount because a second global "formatPeso" declaration would clash.)
+const formatAmount = typeof require === 'function' ? require('./format.js').formatPeso : formatPeso;
 
 const MAX_CASH_CENTS = 10000000; // ₱100,000.00 upper limit for a kiosk cash entry
 
@@ -12,7 +15,7 @@ function parseAmount(input) {
   if (!/^\d+(\.\d{1,2})?$/.test(text)) return { ok: false, error: 'Invalid amount. Please enter a valid number.' };
   const cents = Math.round(parseFloat(text) * 100);
   if (cents === 0) return { ok: false, error: 'Please enter an amount greater than ₱0.00.' };
-  if (cents > MAX_CASH_CENTS) return { ok: false, error: 'Amount is too large. Maximum is ' + formatPeso(MAX_CASH_CENTS) + '.' };
+  if (cents > MAX_CASH_CENTS) return { ok: false, error: 'Amount is too large. Maximum is ' + formatAmount(MAX_CASH_CENTS) + '.' };
   return { ok: true, cents };
 }
 
@@ -24,8 +27,8 @@ function validateCashPayment(input, totalCents) {
     return {
       ok: false,
       error: 'Insufficient payment.',
-      detail: 'Please enter at least ' + formatPeso(totalCents) +
-        '. You are short by ' + formatPeso(totalCents - parsed.cents) + '.',
+      detail: 'Please enter at least ' + formatAmount(totalCents) +
+        '. You are short by ' + formatAmount(totalCents - parsed.cents) + '.',
     };
   }
   return { ok: true, paid: parsed.cents, change: parsed.cents - totalCents };
