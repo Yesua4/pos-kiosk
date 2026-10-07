@@ -3,7 +3,6 @@
 
 const assert = require('assert');
 const { formatPeso } = require('../js/format.js');
-globalThis.formatPeso = formatPeso; // payment.js expects it as a global, like in the browser
 const { PRODUCTS } = require('../js/products.js');
 const { createCart, MAX_QUANTITY } = require('../js/cart.js');
 const { validateCashPayment, createTransactionNumberGenerator } = require('../js/payment.js');
