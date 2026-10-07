@@ -61,6 +61,17 @@
           </thead>
           <tbody id="review-rows"></tbody>
         </table>
+        <button class="discount-toggle" id="discount-toggle" data-action="toggle-discount" aria-pressed="false">
+          <span class="discount-check" aria-hidden="true"></span>
+          <span>
+            <span class="discount-title">Senior Citizen / PWD discount (20%)</span>
+            <span class="discount-note">Tap to apply. Please present a valid ID to the store staff.</span>
+          </span>
+        </button>
+        <div class="summary-lines" id="review-discount-lines" hidden>
+          <div class="summary-line"><span>Subtotal</span><span id="review-subtotal"></span></div>
+          <div class="summary-line summary-discount"><span>Senior Citizen / PWD discount (20%)</span><span id="review-discount"></span></div>
+        </div>
         <div class="summary-total">
           <div>
             <div class="muted">Total Amount</div>

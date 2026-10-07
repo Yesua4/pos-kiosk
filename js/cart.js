@@ -1,10 +1,17 @@
 // Cart logic: no DOM code here, so it can be unit-tested with Node.
 
 const MAX_QUANTITY = 99;
+const SENIOR_PWD_DISCOUNT_PERCENT = 20;
+
+// Senior Citizen / PWD discount on an amount in centavos, rounded to the nearest centavo.
+function computeDiscount(subtotalCents, percent) {
+  return Math.round((subtotalCents * percent) / 100);
+}
 
 function createCart(products) {
   // Map of productId -> quantity, kept in insertion order.
   const lines = new Map();
+  let discountOn = false;
 
   function findProduct(id) {
     const product = products.find((p) => p.id === id);
@@ -62,9 +69,26 @@ function createCart(products) {
       });
     },
 
-    // Total Amount = Sum of all item subtotals
+    // Total Amount = Sum of all item subtotals (before any discount)
     total() {
       return this.items().reduce((sum, line) => sum + line.subtotal, 0);
+    },
+
+    setDiscount(on) {
+      discountOn = Boolean(on);
+    },
+
+    hasDiscount() {
+      return discountOn;
+    },
+
+    discount() {
+      return discountOn ? computeDiscount(this.total(), SENIOR_PWD_DISCOUNT_PERCENT) : 0;
+    },
+
+    // Amount Due = Total − Discount. This is what the customer pays.
+    amountDue() {
+      return this.total() - this.discount();
     },
 
     count() {
@@ -79,8 +103,11 @@ function createCart(products) {
 
     clear() {
       lines.clear();
+      discountOn = false;
     },
   };
 }
 
-if (typeof module !== 'undefined') module.exports = { createCart, MAX_QUANTITY };
+if (typeof module !== 'undefined') {
+  module.exports = { createCart, computeDiscount, MAX_QUANTITY, SENIOR_PWD_DISCOUNT_PERCENT };
+}

@@ -62,7 +62,8 @@
   }
 
   function render() {
-    $$('[data-bind="total"]').forEach((el) => { el.textContent = formatPeso(cart.total()); });
+    // Payment screens show the amount due (total after any discount).
+    $$('[data-bind="total"]').forEach((el) => { el.textContent = formatPeso(cart.amountDue()); });
     switch (state.screen) {
       case 'order': renderCategories(); renderProducts(); renderCart(); break;
       case 'review': renderReview(); break;
@@ -144,12 +145,19 @@
       </tr>`).join('');
     const count = cart.count();
     $('#review-count').textContent = count + (count === 1 ? ' item' : ' items');
-    $('#review-total').textContent = formatPeso(cart.total());
+
+    const discountOn = cart.hasDiscount();
+    $('#discount-toggle').classList.toggle('is-on', discountOn);
+    $('#discount-toggle').setAttribute('aria-pressed', String(discountOn));
+    $('#review-discount-lines').hidden = !discountOn;
+    $('#review-subtotal').textContent = formatPeso(cart.total());
+    $('#review-discount').textContent = '−' + formatPeso(cart.discount());
+    $('#review-total').textContent = formatPeso(cart.amountDue());
   }
 
   // ---------- Cash payment ----------
   function renderCash() {
-    const total = cart.total();
+    const total = cart.amountDue();
     $('#cash-display').value = state.cashInput ? formatPeso(Number(state.cashInput) * 100) : '';
 
     // Live change preview; errors are only shown after tapping Pay Now.
@@ -184,14 +192,14 @@
   }
 
   function setQuickAmount(amount) {
-    // "Exact" uses the total; totals with centavos are entered as a decimal string.
-    state.cashInput = amount === 'exact' ? String(cart.total() / 100) : amount;
+    // "Exact" uses the amount due; amounts with centavos are entered as a decimal string.
+    state.cashInput = amount === 'exact' ? String(cart.amountDue() / 100) : amount;
     showCashError(null);
     renderCash();
   }
 
   function payCash() {
-    const result = validateCashPayment(state.cashInput, cart.total());
+    const result = validateCashPayment(state.cashInput, cart.amountDue());
     if (!result.ok) {
       showCashError(result);
       toast(result.error, 'error');
@@ -216,8 +224,8 @@
       $('#' + method + '-status').hidden = true;
       $('#card-visual').classList.remove('is-processing');
       setBusy(false);
-      const total = cart.total();
-      completePayment(method, total, 0); // simulated: amount paid = total, change = ₱0.00
+      const total = cart.amountDue();
+      completePayment(method, total, 0); // simulated: amount paid = amount due, change = ₱0.00
     }, SIMULATED_DELAY_MS[method]);
   }
 
@@ -235,7 +243,9 @@
       number: nextTransactionNumber(date),
       date,
       items: cart.items(), // snapshot of the order at payment time
-      total: cart.total(),
+      subtotal: cart.total(),
+      discount: cart.discount(),
+      total: cart.amountDue(),
       method: METHOD_LABEL[method],
       paid,
       change,
@@ -250,6 +260,7 @@
     const rows = [
       ['Transaction No.', t.number],
       ['Payment method', t.method],
+      ...(t.discount ? [['Senior Citizen / PWD discount', '−' + formatPeso(t.discount)]] : []),
       ['Transaction amount', formatPeso(t.total)],
       ['Amount paid', formatPeso(t.paid)],
       ['Change', formatPeso(t.change)],
@@ -277,6 +288,9 @@
           <span>${formatPeso(line.subtotal)}</span>
         </div>`).join('')}
       <hr>
+      ${t.discount ? `
+        <div class="r-row"><span>Subtotal</span><span>${formatPeso(t.subtotal)}</span></div>
+        <div class="r-row"><span>Senior/PWD discount (20%)</span><span>−${formatPeso(t.discount)}</span></div>` : ''}
       <div class="r-row r-total"><span>TOTAL</span><span>${formatPeso(t.total)}</span></div>
       <hr>
       <div class="r-row"><span>Payment method</span><span>${escapeHtml(t.method)}</span></div>
@@ -324,6 +338,11 @@
       const name = productName(el.dataset.id);
       cart.remove(el.dataset.id);
       toast(name + ' removed from your order');
+      render();
+    },
+    'toggle-discount': () => {
+      cart.setDiscount(!cart.hasDiscount());
+      toast(cart.hasDiscount() ? 'Senior Citizen / PWD discount applied' : 'Discount removed');
       render();
     },
     'go-order': () => go('order'),
